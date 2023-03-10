@@ -1,15 +1,10 @@
 {
   "domain": "nanoleaf_panels",
   "name": "Nanoleaf Panels",
-  "codeowners": [
-    "@skosyi"
-  ],
+  "codeowners": ["@skosyi"],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://www.home-assistant.io/integrations/nanoleaf_panels",
-  "homekit": {},
   "iot_class": "local_push",
-  "requirements": [],
-  "ssdp": [],
-  "zeroconf": []
+  "requirements": []
 }

@@ -3,10 +3,12 @@
     "step": {
       "user": {
         "data": {
-          "host": "[%key:common::config_flow::data::host%]",
-          "username": "[%key:common::config_flow::data::username%]",
-          "password": "[%key:common::config_flow::data::password%]"
+          "host": "[%key:common::config_flow::data::host%]"
         }
+      },
+      "link": {
+        "title": "Link Nanoleaf",
+        "description": "Press and hold the power button on your Nanoleaf for 5 seconds until the button LEDs start flashing, then click **SUBMIT** within 30 seconds."
       }
     },
     "error": {
@@ -16,6 +18,12 @@
     },
     "abort": {
       "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "double_tap": "{entity_name} Double Tap",
+      "single_tap": "{entity_name} Single Tap"
     }
   }
 }

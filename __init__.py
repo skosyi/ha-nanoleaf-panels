@@ -2,26 +2,26 @@
 from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import Platform
+from homeassistant.const import CONF_HOST, CONF_TOKEN, Platform
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
+from .nanoleaf_controller import NanoleafController
 
-# TODO List the platforms that you want to support.
-# For your initial PR, limit it to 1 platform.
 PLATFORMS: list[Platform] = [Platform.LIGHT]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Nanoleaf Panels from a config entry."""
 
-    hass.data.setdefault(DOMAIN, {})
-    # TODO 1. Create API instance
-    # TODO 2. Validate the API connection (and authentication)
-    # TODO 3. Store an API object for your platforms to access
-    # hass.data[DOMAIN][entry.entry_id] = MyApi(...)
+    nanoleaf_controller = NanoleafController(
+        hass,
+        entry.data[CONF_HOST],
+        entry.data[CONF_TOKEN],
+    )
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = nanoleaf_controller
 
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    hass.config_entries.async_setup_platforms(entry, PLATFORMS)
 
     return True
 

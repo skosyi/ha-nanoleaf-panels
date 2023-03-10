@@ -7,64 +7,38 @@ from typing import Any
 import voluptuous as vol
 
 from homeassistant import config_entries
+
+# from homeassistant.components.ssdp import SsdpServiceInfo
+# from homeassistant.components.zeroconf import ZeroconfServiceInfo
+from homeassistant.const import CONF_HOST, CONF_TOKEN
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
-from homeassistant.exceptions import HomeAssistantError
 
 from .const import DOMAIN
+from .nanoleaf_controller import NanoleafController
 
 _LOGGER = logging.getLogger(__name__)
 
-# TODO adjust the data schema to the data that you need
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
-        vol.Required("host"): str,
-        vol.Required("username"): str,
-        vol.Required("password"): str,
+        vol.Required(CONF_HOST): str,
     }
 )
 
 
-class PlaceholderHub:
-    """Placeholder class to make tests pass.
+async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> str:
+    """Validate the user input allows us to connect."""
 
-    TODO Remove this placeholder class and replace with things from your PyPI package.
-    """
+    user_input = data[CONF_HOST]  # 192.168.1.23:16021
+    if user_input:
+        parts = user_input.split(":")
+        host = parts[0]
+        port = 16021
+        if len(parts) > 1 and parts[1]:
+            port = parts[1]
+        return f"{host}:{port}"
 
-    def __init__(self, host: str) -> None:
-        """Initialize."""
-        self.host = host
-
-    async def authenticate(self, username: str, password: str) -> bool:
-        """Test if we can authenticate with the host."""
-        return True
-
-
-async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
-    """Validate the user input allows us to connect.
-
-    Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
-    """
-    # TODO validate the data can be used to set up a connection.
-
-    # If your PyPI package is not built with async, pass your methods
-    # to the executor:
-    # await hass.async_add_executor_job(
-    #     your_validate_func, data["username"], data["password"]
-    # )
-
-    hub = PlaceholderHub(data["host"])
-
-    if not await hub.authenticate(data["username"], data["password"]):
-        raise InvalidAuth
-
-    # If you cannot connect:
-    # throw CannotConnect
-    # If the authentication is wrong:
-    # InvalidAuth
-
-    # Return info that you want to store in the config entry.
-    return {"title": "Name of the device"}
+    return user_input
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -72,32 +46,74 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
+    def __init__(self) -> None:
+        """Initialize config flow."""
+        self.nanoleaf_controller: NanoleafController = NanoleafController(self.hass)
+
+    # async def async_step_homekit(
+    #     self, discovery_info: ZeroconfServiceInfo
+    # ) -> FlowResult:
+    #     """Handle a flow initialized by Homekit discovery."""
+    #     _LOGGER.info("Async_step_homekit")
+    #     return await self.async_step_user()
+
+    # async def async_step_ssdp(self, discovery_info: SsdpServiceInfo) -> FlowResult:
+    #     """Handle a flow initialized by SSDP discovery."""
+    #     _LOGGER.info("Async_step_ssdp")
+    #     return await self.async_step_user()
+
+    # async def async_step_zeroconf(
+    #     self, discovery_info: ZeroconfServiceInfo
+    # ) -> FlowResult:
+    #     """Handle a flow initialized by Zeroconf discovery."""
+    #     _LOGGER.info("Async_step_zeroconf")
+    #     return await self.async_step_user()
+
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle the initial step."""
-        errors: dict[str, str] = {}
-        if user_input is not None:
-            try:
-                info = await validate_input(self.hass, user_input)
-            except CannotConnect:
-                errors["base"] = "cannot_connect"
-            except InvalidAuth:
-                errors["base"] = "invalid_auth"
-            except Exception:  # pylint: disable=broad-except
-                _LOGGER.exception("Unexpected exception")
-                errors["base"] = "unknown"
-            else:
-                return self.async_create_entry(title=info["title"], data=user_input)
 
-        return self.async_show_form(
-            step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
-        )
+        # zc = await zeroconf.async_get_instance(self.hass)
+        # aiozc = await zeroconf.async_get_async_instance(self.hass)
 
+        # discovery_infos = await ssdp.async_get_discovery_info_by_st(
+        #     self.hass, "ssdp:all" // "nanoleaf:nl42"
+        # )
 
-class CannotConnect(HomeAssistantError):
-    """Error to indicate we cannot connect."""
+        if user_input is None:
+            return self.async_show_form(
+                step_id="user", data_schema=STEP_USER_DATA_SCHEMA
+            )
 
+        host = await validate_input(self.hass, user_input)
+        if host is not None:
+            self.nanoleaf_controller = NanoleafController(self.hass, host)
+            return await self.async_step_link()
 
-class InvalidAuth(HomeAssistantError):
-    """Error to indicate there is invalid auth."""
+        return self.async_show_form(step_id="user", data_schema=STEP_USER_DATA_SCHEMA)
+
+    async def async_step_link(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle Nanoleaf link step."""
+        if user_input is None:
+            return self.async_show_form(step_id="link")
+
+        info = None
+        token = await self.nanoleaf_controller.new_token()
+        if token is not None:
+            info = await self.nanoleaf_controller.get_info()
+
+        if info is not None:
+            await self.async_set_unique_id(info["serialNo"])
+            self._abort_if_unique_id_configured()
+            return self.async_create_entry(
+                title=info["name"],
+                data={
+                    CONF_HOST: self.nanoleaf_controller.host,
+                    CONF_TOKEN: self.nanoleaf_controller.token,
+                },
+            )
+
+        return self.async_show_form(step_id="link", errors={"base": "unknown"})
