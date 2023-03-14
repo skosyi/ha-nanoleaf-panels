@@ -17,7 +17,8 @@ git subtree split --prefix=$src_folder -b split_folder_branch
 
 # check out target branch and add all commits in temp branch to the correct folder
 git checkout -f $current_branch
-git subtree add --prefix=$dst_folder split_folder_branch
+# git subtree add --prefix=$dst_folder split_folder_branch
+git subtree merge --prefix=$dst_folder split_folder_branch -m 'update to latest'
 
 # clean up
 git branch -d split_folder_branch
