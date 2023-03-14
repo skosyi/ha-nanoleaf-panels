@@ -4,7 +4,8 @@
   "codeowners": ["@skosyi"],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://www.home-assistant.io/integrations/nanoleaf_panels",
+  "documentation": "https://github.com/skosyi/ha-nanoleaf-panels",
   "iot_class": "local_push",
+  "issue_tracker": "https://github.com/skosyi/ha-nanoleaf-panels/issues",
   "requirements": []
 }
