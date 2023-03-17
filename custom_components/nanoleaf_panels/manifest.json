@@ -7,6 +7,11 @@
   "documentation": "https://github.com/skosyi/ha-nanoleaf-panels",
   "iot_class": "local_push",
   "issue_tracker": "https://github.com/skosyi/ha-nanoleaf-panels/issues",
+<<<<<<< HEAD
   "version": "0.0.1",
   "requirements": []
+=======
+  "requirements": [],
+  "version": "0.0.1"
+>>>>>>> b1b98e26dac719004ce63923b277442586f38935
 }
