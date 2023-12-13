@@ -3,10 +3,25 @@
   "name": "Nanoleaf Panels",
   "codeowners": ["@skosyi"],
   "config_flow": true,
-  "dependencies": [],
+  "dependencies": ["zeroconf", "ssdp"],
   "documentation": "https://github.com/skosyi/ha-nanoleaf-panels",
+  "integration_type": "device",
   "iot_class": "local_push",
   "issue_tracker": "https://github.com/skosyi/ha-nanoleaf-panels/issues",
   "requirements": [],
-  "version": "0.0.1"
+  "ssdp": [
+    {
+      "st": "Nanoleaf_aurora:light"
+    },
+    {
+      "st": "nanoleaf:nl29"
+    },
+    {
+      "st": "nanoleaf:nl42"
+    },
+    {
+      "st": "nanoleaf:nl52"
+    }
+  ],
+  "zeroconf": ["_nanoleafms._tcp.local.", "_nanoleafapi._tcp.local."]
 }

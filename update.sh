@@ -1,25 +1,18 @@
 #!/bin/bash -v
 
-current_branch=`git rev-parse --abbrev-ref HEAD`
-echo current branch: $current_branch
-
+tmp_dir=$(uuidgen)
 src_repo="https://github.com/skosyi/ha-core"
 src_branch="nanoleaf_panels"
 src_folder="homeassistant/components/nanoleaf_panels"
-src_repo_alias="ha_core"
-dst_folder="custom_components/nanoleaf_panels"
+src_repo_alias="ha-core"
+dst_folder="custom_components"
 
-# check out the src 
-git remote add src_repo_alias $src_repo
-git fetch src_repo_alias
-git checkout -f src_repo_alias/$src_branch
-git subtree split --prefix=$src_folder -b split_folder_branch
-
-# check out target branch and add all commits in temp branch to the correct folder
-git checkout -f $current_branch
-# git subtree add --prefix=$dst_folder split_folder_branch
-git subtree merge --prefix=$dst_folder split_folder_branch -m 'update to latest'
-
-# clean up
-git branch -d split_folder_branch
-git remote remove src_repo_alias
+mkdir $tmp_dir
+cd $tmp_dir
+git clone --depth 1 --branch $src_branch --no-checkout $src_repo
+cd $src_repo_alias
+git sparse-checkout set $src_folder
+git checkout
+cd ../..
+rsync -r $tmp_dir/$src_repo_alias/$src_folder $dst_folder
+rm -rf $tmp_dir
