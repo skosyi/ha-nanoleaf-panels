@@ -23,5 +23,6 @@
       "st": "nanoleaf:nl52"
     }
   ],
-  "zeroconf": ["_nanoleafms._tcp.local.", "_nanoleafapi._tcp.local."]
+  "zeroconf": ["_nanoleafms._tcp.local.", "_nanoleafapi._tcp.local."],
+  "version": "0.0.2"
 }
