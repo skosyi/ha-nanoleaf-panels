@@ -7,7 +7,7 @@ from typing import Any
 import requests
 
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_registry
+from homeassistant.helpers import entity_registry as er
 
 from .const import EVENT
 
@@ -55,6 +55,20 @@ class NanoleafController:
 
         return True
 
+    # info: {
+    # 'name': 'Shapes 07E7',
+    # 'serialNo': 'S20530H1600',
+    # 'manufacturer': 'Nanoleaf',
+    # 'firmwareVersion': '9.2.4',
+    # 'hardwareVersion': '1.3-0',
+    # 'model': 'NL42',
+    # 'discovery': {},
+    # 'effects': {'effectsList': ['Beatdrop', 'Blaze', 'Catch a Hedgehog', 'Cocoa Beach', 'Cotton Candy', 'Date Night', 'Dynamic 21-11-2023 12:13', 'Hip Hop', 'Hot Sauce', 'Jungle', 'Lightscape', 'Memory', 'Morning Sky', 'Northern Lights', 'Pop Rocks', 'Prism', 'Starlight', 'Sundown', 'Waterfall', 'Whack A Mole'], 'select': 'Morning Sky'},
+    # 'firmwareUpgrade': {},
+    # 'panelLayout': {'globalOrientation': {'value': 2, 'max': 360, 'min': 0}, 'layout': {'numPanels': 16, 'sideLength': 67, 'positionData': [{'panelId': 30526, 'x': 25, 'y': 0, 'o': 0, 'shapeType': 9}, {'panelId': 5584, 'x': 59, 'y': 19, 'o': 60, 'shapeType': 9}, {'panelId': 50426, 'x': 59, 'y': 58, 'o': 120, 'shapeType': 9}, {'panelId': 12860, 'x': 92, 'y': 77, 'o': 60, 'shapeType': 9}, {'panelId': 52419, 'x': 92, 'y': 116, 'o': 0, 'shapeType': 9}, {'panelId': 58539, 'x': 126, 'y': 135, 'o': 300, 'shapeType': 9}, {'panelId': 63684, 'x': 126, 'y': 174, 'o': 0, 'shapeType': 9}, {'panelId': 21094, 'x': 159, 'y': 116, 'o': 120, 'shapeType': 9}, {'panelId': 22289, 'x': 92, 'y': 0, 'o': 240, 'shapeType': 9}, {'panelId': 18116, 'x': 126, 'y': 19, 'o': 300, 'shapeType': 9}, {'panelId': 10284, 'x': 159, 'y': 0, 'o': 120, 'shapeType': 9}, {'panelId': 9772, 'x': 193, 'y': 19, 'o': 60, 'shapeType': 9}, {'panelId': 40805, 'x': 193, 'y': 58, 'o': 120, 'shapeType': 9}, {'panelId': 13902, 'x': 159, 'y': 77, 'o': 300, 'shapeType': 9}, {'panelId': 38268, 'x': 226, 'y': 0, 'o': 240, 'shapeType': 9}, {'panelId': 0, 'x': 0, 'y': 15, 'o': 60, 'shapeType': 12}]}},
+    # 'qkihnokomhartlnp': {},
+    # 'schedules': {},
+    # 'state': {'brightness': {'value': 9, 'max': 100, 'min': 0}, 'colorMode': 'effect', 'ct': {'value': 6493, 'max': 6500, 'min': 1200}, 'hue': {'value': 0, 'max': 360, 'min': 0}, 'on': {'value': True}, 'sat': {'value': 0, 'max': 100, 'min': 0}}}
     async def get_info(self) -> dict[str, Any] | None:
         """Fetch device information."""
         if self.info is None:
@@ -69,7 +83,7 @@ class NanoleafController:
         return self.info
 
     async def set_brightness(self, brightness, transition) -> int | None:
-        """set brightness for all panels."""
+        """Set brightness for all panels."""
         payload = json.dumps(
             {
                 "brightness": {
@@ -136,10 +150,8 @@ class NanoleafController:
 
                     entity_id = obj["events"][0]["panelId"]
 
-                    entity_reg = entity_registry.async_get(self.hass)
-                    entities = entity_registry.async_entries_for_config_entry(
-                        entity_reg, entry_id
-                    )
+                    entity_reg = er.async_get(self.hass)
+                    entities = er.async_entries_for_config_entry(entity_reg, entry_id)
                     entry_found = None
                     for entity in entities:
                         if entity.domain != "light":

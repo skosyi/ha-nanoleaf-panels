@@ -1,14 +1,19 @@
 {
   "config": {
     "step": {
-      "user": {
-        "data": {
-          "host": "[%key:common::config_flow::data::host%]"
-        }
-      },
       "link": {
         "title": "Link Nanoleaf",
         "description": "Press and hold the power button on your Nanoleaf for 5 seconds until the button LEDs start flashing, then click **SUBMIT** within 30 seconds."
+      },
+      "user": {
+        "title": "Setup Nanoleaf Device",
+        "description": "The hostname or IP address of your Nanoleaf device.",
+        "data": {
+          "host": "[%key:common::config_flow::data::host%]"
+        },
+        "data_description": {
+          "host": "The hostname or IP address of your Nanoleaf device."
+        }
       }
     },
     "error": {
