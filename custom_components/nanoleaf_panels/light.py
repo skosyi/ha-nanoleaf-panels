@@ -13,7 +13,7 @@ from homeassistant.components.light import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
@@ -47,7 +47,7 @@ async def async_setup_entry(
             if panel["shapeType"] == 9:
                 entity = PanelLight(
                     panel["panelId"],
-                    f"Panel{index}",
+                    f"Panel{index:02}",
                     nanoleaf_controller,
                     info,
                 )
@@ -144,11 +144,11 @@ class PanelLight(LightEntity):
     def device_info(self) -> DeviceInfo | None:
         """Build device info."""
         return DeviceInfo(
-            identifiers={(DOMAIN, self.device["serialNo"])},
+            identifiers={(DOMAIN, self.device["name"])},
             name=self.device["name"],
             manufacturer=self.device["manufacturer"],
             model=self.device["model"],
             sw_version=self.device["firmwareVersion"],
             hw_version=self.device["hardwareVersion"],
-            # "configuration_url"=f"http://192.168.1.36",
+            configuration_url=f"http://{self.nanoleaf_controller.host.split(':')[0]}",
         )

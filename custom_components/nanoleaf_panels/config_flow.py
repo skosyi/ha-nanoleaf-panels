@@ -85,28 +85,39 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_ssdp(self, discovery_info: ssdp.SsdpServiceInfo) -> FlowResult:
         """Handle a flow initialized by SSDP discovery."""
         _LOGGER.info("X async_step_ssdp: %s", discovery_info)
-        host = discovery_info.ssdp_headers["_host"]
-        name = discovery_info.ssdp_headers["nl-devicename"]
-        device_id = discovery_info.ssdp_headers["nl-deviceid"]
+        host = discovery_info.ssdp_headers["_host"]  # '192.168.1.23'
+        name = discovery_info.ssdp_headers["nl-devicename"]  # 'Shapes 07E7'
+        device_id = discovery_info.ssdp_headers["nl-deviceid"]  # '1A:25:70:12:4F:A6'
         _LOGGER.info("X host: %s name: %s id: %s", host, name, device_id)
         await self.async_set_unique_id(name)
         self._abort_if_unique_id_configured()
-
         self.nanoleaf_controller = NanoleafController(self.hass, host)
         return await self.async_step_link()
 
     # 2023-12-12 20:30:07.951 INFO (MainThread) [custom_components.nanoleaf_panels.config_flow] X async_step_zeroconf: ZeroconfServiceInfo(ip_address=IPv4Address('192.168.1.23'), ip_addresses=[IPv4Address('192.168.1.23'), IPv6Address('fdd0:ee30:5608:c35a:255:daff:fe5e:7e7'), IPv6Address('fe80::255:daff:fe5e:7e7')], port=16021, hostname='Shapes-07E7.local.', type='_nanoleafapi._tcp.local.', name='Shapes 07E7._nanoleafapi._tcp.local.', properties={'srcvers': '9.2.4', 'md': 'NL42', 'id': '1A:25:70:12:4F:A6'})
     # 2023-12-12 20:30:07.967 INFO (MainThread) [custom_components.nanoleaf_panels.config_flow] X async_step_zeroconf: ZeroconfServiceInfo(ip_address=IPv4Address('192.168.1.23'), ip_addresses=[IPv4Address('192.168.1.23'), IPv6Address('fdd0:ee30:5608:c35a:255:daff:fe5e:7e7'), IPv6Address('fe80::255:daff:fe5e:7e7')], port=6517, hostname='Shapes-07E7.local.', type='_nanoleafms._tcp.local.', name='Shapes 07E7._nanoleafms._tcp.local.', properties={'sf': '1', 'sh': 'oopLKA==', 'pv': '1.1', 'ci': '5', 's#': '1', 'c#': '12', 'ff': '1', 'md': 'NL42', 'id': '1A:25:70:12:4F:A6'})
     # 2023-12-12 20:30:07.968 INFO (MainThread) [custom_components.nanoleaf_panels.config_flow] X async_step_zeroconf: ZeroconfServiceInfo(ip_address=IPv4Address('192.168.1.23'), ip_addresses=[IPv4Address('192.168.1.23'), IPv6Address('fdd0:ee30:5608:c35a:255:daff:fe5e:7e7'), IPv6Address('fe80::255:daff:fe5e:7e7'), IPv6Address('fdd0:ee30:5608:c35a:255:daff:fe5e:7e7'), IPv6Address('fe80::255:daff:fe5e:7e7')], port=16021, hostname='Shapes-07E7.local.', type='_nanoleafapi._tcp.local.', name='Shapes 07E7._nanoleafapi._tcp.local.', properties={'srcvers': '9.2.4', 'md': 'NL42', 'id': '1A:25:70:12:4F:A6'})
-    # 2023-12-12 20:30:07.972 INFO (MainThread) [custom_components.nanoleaf_panels.config_flow] X async_step_zeroconf: ZeroconfServiceInfo(ip_address=IPv4Address('192.168.1.23'), ip_addresses=[IPv4Address('192.168.1.23'), IPv6Address('fdd0:ee30:5608:c35a:255:daff:fe5e:7e7'), IPv6Address('fe80::255:daff:fe5e:7e7'), IPv6Address('fdd0:ee30:5608:c35a:255:daff:fe5e:7e7'), IPv6Address('fe80::255:daff:fe5e:7e7')], port=6517, hostname='Shapes-07E7.local.', type='_nanoleafms._tcp.local.', name='Shapes 07E7._nanoleafms._tcp.local.', properties={'sf': '1', 'sh': 'oopLKA==', 'pv': '1.1', 'ci': '5', 's#': '1', 'c#': '12', 'ff': '1', 'md': 'NL42', 'id': '1A:25:70:12:4F:A6'})
-
+    # 2023-12-12 20:30:07.972 INFO (MainThread) [custom_components.nanoleaf_panels.config_flow] X async_step_zeroconf: ZeroconfServiceInfo(
+    # ip_address=IPv4Address('192.168.1.23'),
+    # ip_addresses=[IPv4Address('192.168.1.23'), IPv6Address('fdd0:ee30:5608:c35a:255:daff:fe5e:7e7'), IPv6Address('fe80::255:daff:fe5e:7e7'), IPv6Address('fdd0:ee30:5608:c35a:255:daff:fe5e:7e7'), IPv6Address('fe80::255:daff:fe5e:7e7')],
+    # port=6517,
+    # hostname='Shapes-07E7.local.',
+    # type='_nanoleafms._tcp.local.',
+    # name='Shapes 07E7._nanoleafms._tcp.local.',
+    # properties={'sf': '1', 'sh': 'oopLKA==', 'pv': '1.1', 'ci': '5', 's#': '1', 'c#': '12', 'ff': '1', 'md': 'NL42', 'id': '1A:25:70:12:4F:A6'})
     async def async_step_zeroconf(
         self, discovery_info: zeroconf.ZeroconfServiceInfo
     ) -> FlowResult:
         """Handle a flow initialized by Zeroconf discovery."""
         _LOGGER.info("X async_step_zeroconf: %s", discovery_info)
         host = str(discovery_info.ip_address)
-        _LOGGER.info("X host: %s", host)
+        name = discovery_info.name.split(".")[
+            0
+        ]  # 'Shapes 07E7._nanoleafms._tcp.local.'
+        device_id = discovery_info.properties["id"]  # '1A:25:70:12:4F:A6'
+        _LOGGER.info("X host: %s name: %s id: %s", host, name, device_id)
+        await self.async_set_unique_id(name)
+        self._abort_if_unique_id_configured()
         self.nanoleaf_controller = NanoleafController(self.hass, host)
         return await self.async_step_link()
 
