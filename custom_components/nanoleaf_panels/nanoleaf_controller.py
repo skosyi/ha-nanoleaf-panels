@@ -18,11 +18,11 @@ class NanoleafController:
     """Set up Nanoleaf Dev from a config entry."""
 
     def __init__(
-        self, hass: HomeAssistant, host: str | None = None, token: str | None = None
+        self, hass: HomeAssistant, netloc: str | None = None, token: str | None = None
     ) -> None:
         """Initialize internal props."""
         self.hass = hass
-        self.host = host
+        self.netloc = netloc
         self.token = token
         self.info = None
 
@@ -30,7 +30,7 @@ class NanoleafController:
         """Generate new token for device access."""
         response = await self.hass.async_add_executor_job(
             requests.post,
-            f"http://{self.host}/api/v1/new",
+            f"http://{self.netloc}/api/v1/new",
         )
         if response.status_code == HTTPStatus.OK:
             payload = response.json()
@@ -45,7 +45,7 @@ class NanoleafController:
         token = new_token or self.token
         response = await self.hass.async_add_executor_job(
             requests.get,
-            f"http://{self.host}/api/v1/{new_token}",
+            f"http://{self.netloc}/api/v1/{new_token}",
         )
 
         if response.status_code == HTTPStatus.OK:
@@ -74,7 +74,7 @@ class NanoleafController:
         if self.info is None:
             response = await self.hass.async_add_executor_job(
                 requests.get,
-                f"http://{self.host}/api/v1/{self.token}",
+                f"http://{self.netloc}/api/v1/{self.token}",
             )
 
             if response.status_code == HTTPStatus.OK:
@@ -94,7 +94,7 @@ class NanoleafController:
         )
         response = await self.hass.async_add_executor_job(
             requests.put,
-            f"http://{self.host}/api/v1/{self.token}/state/brightness",
+            f"http://{self.netloc}/api/v1/{self.token}/state/brightness",
             payload,
         )
         result = None
@@ -124,7 +124,7 @@ class NanoleafController:
         )
         response = await self.hass.async_add_executor_job(
             requests.put,
-            f"http://{self.host}/api/v1/{self.token}/effects",
+            f"http://{self.netloc}/api/v1/{self.token}/effects",
             payload,
         )
 
@@ -133,7 +133,7 @@ class NanoleafController:
     def process_events_stream(self, entry_id) -> None:
         """Read stream and trigger corresponding events."""
         response = requests.get(
-            f"http://{self.host}/api/v1/{self.token}/events?id=4",
+            f"http://{self.netloc}/api/v1/{self.token}/events?id=4",
             stream=True,
             timeout=None,
         )

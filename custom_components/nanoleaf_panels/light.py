@@ -150,5 +150,5 @@ class PanelLight(LightEntity):
             model=self.device["model"],
             sw_version=self.device["firmwareVersion"],
             hw_version=self.device["hardwareVersion"],
-            configuration_url=f"http://{self.nanoleaf_controller.host.split(':')[0]}",
+            configuration_url=f"http://{self.nanoleaf_controller.netloc.split(':')[0]}",
         )

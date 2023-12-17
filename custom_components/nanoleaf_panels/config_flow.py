@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 from typing import Any
+from urllib.parse import urlparse
 
 import voluptuous as vol
 
@@ -85,13 +86,14 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_ssdp(self, discovery_info: ssdp.SsdpServiceInfo) -> FlowResult:
         """Handle a flow initialized by SSDP discovery."""
         _LOGGER.info("X async_step_ssdp: %s", discovery_info)
-        host = discovery_info.ssdp_headers["_host"]  # '192.168.1.23'
+        netloc = str(urlparse(discovery_info.ssdp_location).netloc)
+        # host = discovery_info.ssdp_headers["_host"]  # '192.168.1.23'
         name = discovery_info.ssdp_headers["nl-devicename"]  # 'Shapes 07E7'
         device_id = discovery_info.ssdp_headers["nl-deviceid"]  # '1A:25:70:12:4F:A6'
-        _LOGGER.info("X host: %s name: %s id: %s", host, name, device_id)
+        _LOGGER.info("X netloc: %s name: %s id: %s", netloc, name, device_id)
         await self.async_set_unique_id(name)
         self._abort_if_unique_id_configured()
-        self.nanoleaf_controller = NanoleafController(self.hass, host)
+        self.nanoleaf_controller = NanoleafController(self.hass, netloc)
         return await self.async_step_link()
 
     # 2023-12-12 20:30:07.951 INFO (MainThread) [custom_components.nanoleaf_panels.config_flow] X async_step_zeroconf: ZeroconfServiceInfo(ip_address=IPv4Address('192.168.1.23'), ip_addresses=[IPv4Address('192.168.1.23'), IPv6Address('fdd0:ee30:5608:c35a:255:daff:fe5e:7e7'), IPv6Address('fe80::255:daff:fe5e:7e7')], port=16021, hostname='Shapes-07E7.local.', type='_nanoleafapi._tcp.local.', name='Shapes 07E7._nanoleafapi._tcp.local.', properties={'srcvers': '9.2.4', 'md': 'NL42', 'id': '1A:25:70:12:4F:A6'})
@@ -111,14 +113,15 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle a flow initialized by Zeroconf discovery."""
         _LOGGER.info("X async_step_zeroconf: %s", discovery_info)
         host = str(discovery_info.ip_address)
+        netloc = f"{host}:16021"
         name = discovery_info.name.split(".")[
             0
         ]  # 'Shapes 07E7._nanoleafms._tcp.local.'
         device_id = discovery_info.properties["id"]  # '1A:25:70:12:4F:A6'
-        _LOGGER.info("X host: %s name: %s id: %s", host, name, device_id)
+        _LOGGER.info("X netloc: %s name: %s id: %s", netloc, name, device_id)
         await self.async_set_unique_id(name)
         self._abort_if_unique_id_configured()
-        self.nanoleaf_controller = NanoleafController(self.hass, host)
+        self.nanoleaf_controller = NanoleafController(self.hass, netloc)
         return await self.async_step_link()
 
     async def async_step_user(
@@ -136,9 +139,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 # , errors
             )
 
-        host = await validate_input(self.hass, user_input)
-        if host is not None:
-            self.nanoleaf_controller = NanoleafController(self.hass, host)
+        netloc = await validate_input(self.hass, user_input)
+        if netloc is not None:
+            self.nanoleaf_controller = NanoleafController(self.hass, netloc)
             return await self.async_step_link()
 
         return self.async_show_form(step_id="user", data_schema=STEP_USER_DATA_SCHEMA)
@@ -161,7 +164,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_create_entry(
                 title=info["name"],
                 data={
-                    CONF_HOST: self.nanoleaf_controller.host,
+                    CONF_HOST: self.nanoleaf_controller.netloc,
                     CONF_TOKEN: self.nanoleaf_controller.token,
                 },
             )
