@@ -1,0 +1,34 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Device is already configured"
+        },
+        "error": {
+            "cannot_connect": "Failed to connect",
+            "invalid_auth": "Invalid authentication",
+            "unknown": "Unexpected error"
+        },
+        "step": {
+            "link": {
+                "description": "Press and hold the power button on your Nanoleaf for 5 seconds until the button LEDs start flashing, then click **SUBMIT** within 30 seconds.",
+                "title": "Link Nanoleaf"
+            },
+            "user": {
+                "data": {
+                    "host": "Host"
+                },
+                "data_description": {
+                    "host": "The hostname or IP address of your Nanoleaf device."
+                },
+                "description": "The hostname or IP address of your Nanoleaf device.",
+                "title": "Setup Nanoleaf Device"
+            }
+        }
+    },
+    "device_automation": {
+        "trigger_type": {
+            "double_tap": "{entity_name} Double Tap",
+            "single_tap": "{entity_name} Single Tap"
+        }
+    }
+}
