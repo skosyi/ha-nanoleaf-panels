@@ -31,6 +31,23 @@ def nanoleaf_panels_thread(hass: HomeAssistant, entry: ConfigEntry) -> None:
         _LOGGER.info("Reconnect")
 
 
+# 'positionData': [
+# {'panelId': 30526, 'x': 25, 'y': 0, 'o': 0, 'shapeType': 9},
+# {'panelId': 5584, 'x': 59, 'y': 19, 'o': 60, 'shapeType': 9},
+# {'panelId': 50426, 'x': 59, 'y': 58, 'o': 120, 'shapeType': 9},
+# {'panelId': 12860, 'x': 92, 'y': 77, 'o': 60, 'shapeType': 9},
+# {'panelId': 52419, 'x': 92, 'y': 116, 'o': 0, 'shapeType': 9},
+# {'panelId': 58539, 'x': 126, 'y': 135, 'o': 300, 'shapeType': 9},
+# {'panelId': 63684, 'x': 126, 'y': 174, 'o': 0, 'shapeType': 9},
+# {'panelId': 21094, 'x': 159, 'y': 116, 'o': 120, 'shapeType': 9},
+# {'panelId': 22289, 'x': 92, 'y': 0, 'o': 240, 'shapeType': 9},
+# {'panelId': 18116, 'x': 126, 'y': 19, 'o': 300, 'shapeType': 9},
+# {'panelId': 10284, 'x': 159, 'y': 0, 'o': 120, 'shapeType': 9},
+# {'panelId': 9772, 'x': 193, 'y': 19, 'o': 60, 'shapeType': 9},
+# {'panelId': 40805, 'x': 193, 'y': 58, 'o': 120, 'shapeType': 9},
+# {'panelId': 13902, 'x': 159, 'y': 77, 'o': 300, 'shapeType': 9},
+# {'panelId': 38268, 'x': 226, 'y': 0, 'o': 240, 'shapeType': 9},
+# {'panelId': 0, 'x': 0, 'y': 15, 'o': 60, 'shapeType': 12}]}},
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
@@ -42,6 +59,8 @@ async def async_setup_entry(
     if info is not None:
         entities = []
         panels = info["panelLayout"]["layout"]["positionData"]
+        panels.sort(key=lambda panel: panel["panelId"])
+
         index = 1
         for panel in panels:
             if panel["shapeType"] == 9:
